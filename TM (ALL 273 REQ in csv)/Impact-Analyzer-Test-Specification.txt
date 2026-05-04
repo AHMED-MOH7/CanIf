@@ -1,0 +1,562 @@
+================================================================================
+  CANIF CHANGE-PROPAGATION — IMPACT ANALYZER TEST SPECIFICATION
+  Project   : CANIF OpenSAR (AUTOSAR CanIf AR 4.0.3)
+  Phase     : Phase 2 — Impact Analyzer
+  TM Ref    : REQ-CODE-TM.txt  (104 mapped requirements)
+  Code Ref  : OpenSAR/communication/CanIf/CanIf.c
+  Req Src   : Requirments/CanIf_SWS_AR403.csv (273 requirements)
+  Version   : 1.0
+  Date      : 2026-05-04
+================================================================================
+
+1. PURPOSE
+----------
+This specification defines the test cases used to validate the Impact Analyzer
+component of the Change-Propagation system. Each test case simulates a realistic
+AUTOSAR requirement change, verifies that the Impact Analyzer correctly identifies
+all affected CanIf.c functions via the TM, and provides a precise code mutation
+that serves as the ground-truth evidence of where the change manifests in code.
+
+2. SYSTEM UNDER TEST
+--------------------
+  Input  : Delta-Detector output — one or more changed Req IDs with change type
+  Lookup : REQ-CODE-TM.txt — maps Req ID → CanIf.c function(s)
+  Output : Set of CanIf.c functions impacted by the requirement change(s)
+
+  Pass criterion (default): The analyzer output set EXACTLY MATCHES the
+  TM-predicted set for each changed Req ID in the scenario. No missing functions;
+  no extra functions.
+
+3. CHANGE CATEGORIES
+---------------------
+  FUNCTIONAL   (F)    : Change in behavioral logic — algorithm, control flow,
+                        error code, return value, or called API. Code MUST change.
+
+  NON-FUNCTIONAL (NF) : Change in interface contract with no behavioral logic
+                        change — data type width, naming convention, AUTOSAR
+                        version alignment, SduLength range boundary. Code MUST
+                        change but runtime behavior for valid inputs is unchanged.
+
+  COSMETIC (C)        : Wording, cross-reference number, editorial clarification.
+                        NO code change required. Impact Analyzer still flags the
+                        function; human engineer review closes with "no action".
+
+  CROSS-DEPEND 1→N (XD-1N) : One requirement change propagates to N >= 2
+                        distinct CanIf.c functions.
+
+  CROSS-DEPEND N→1 (XD-N1) : N >= 2 requirement changes all propagate to the
+                        same single CanIf.c function. Analyzer must aggregate.
+
+  COMBINED (CB)       : A realistic sprint containing simultaneous changes of
+                        multiple categories across multiple functions.
+
+4. MUTATION CONVENTION
+-----------------------
+  Each test case with a Functional or Non-functional category provides an
+  EXACT CODE MUTATION: the precise old string → new string to apply in CanIf.c
+  to create the ground-truth test fixture. Cosmetic cases carry NO mutation.
+  Apply mutations ONE TEST CASE AT A TIME and revert after each run to keep
+  CanIf.c in a clean state between executions.
+
+  Notation used:
+    FILE  : Relative path from project root
+    LINE  : Line number in the file at the time of this specification
+    OLD   : The exact existing code string to replace
+    NEW   : The replacement string representing the mutated requirement
+
+================================================================================
+5. TEST CASES
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-F-01
+────────────────────────────────────────────────────────────────────────────────
+Title          : Functional — SetControllerMode calls wrong CAN Driver API
+Category       : FUNCTIONAL
+AUTOSAR Req ID : SWS_CANIF_00308
+Req (Original) : "The service CanIf_SetControllerMode() shall call
+                  Can_SetControllerMode(Controller, Transition) for the
+                  requested CAN controller."
+Simulated Change: Requirement is revised to mandate a new intermediate wrapper:
+                  "CanIf_SetControllerMode() shall call Can_InitController()
+                  instead of Can_SetControllerMode() for every transition."
+TM Prediction  : CanIf_SetControllerMode
+Expected Output: { CanIf_SetControllerMode }
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+  --- MUTATION 1 (line 253) ---
+  OLD : if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK){
+  NEW : if (Can_InitController(canControllerId, 0) == CAN_NOT_OK){
+
+  --- MUTATION 2 (line 264) ---
+  OLD : if (Can_SetControllerMode(canControllerId, CAN_T_START) == CAN_NOT_OK){
+  NEW : if (Can_InitController(canControllerId, 0) == CAN_NOT_OK){
+
+  --- MUTATION 3 (line 275) ---
+  OLD : if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK){
+  NEW : if (Can_InitController(canControllerId, 0) == CAN_NOT_OK){
+
+  --- MUTATION 4 (line 285) ---
+  OLD : if (Can_SetControllerMode(canControllerId, CAN_T_SLEEP) == CAN_NOT_OK){
+  NEW : if (Can_InitController(canControllerId, 0) == CAN_NOT_OK){
+
+  --- MUTATION 5 (line 296) ---
+  OLD : if (Can_SetControllerMode(canControllerId, CAN_T_WAKEUP) == CAN_NOT_OK){
+  NEW : if (Can_InitController(canControllerId, 0) == CAN_NOT_OK){
+
+  --- MUTATION 6 (line 306) ---
+  OLD : if (Can_SetControllerMode(canControllerId, CAN_T_STOP) == CAN_NOT_OK){
+  NEW : if (Can_InitController(canControllerId, 0) == CAN_NOT_OK){
+
+Pass Criterion : Analyzer output == { CanIf_SetControllerMode } — exactly one
+                 function flagged, matching TM entry for SWS_CANIF_00308.
+AUTOSAR Note   : Can_SetControllerMode is the normative CanDrv API per
+                 SWS_Can_00017. Replacing it with Can_InitController violates
+                 the CanIf–CanDrv interface contract and breaks all state
+                 transitions.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-F-02
+────────────────────────────────────────────────────────────────────────────────
+Title          : Functional — Wrong DET error code for invalid ControllerId
+Category       : FUNCTIONAL
+AUTOSAR Req ID : SWS_CANIF_00311
+Req (Original) : "If parameter ControllerId of CanIf_SetControllerMode() has an
+                  invalid value, the CanIf shall report development error code
+                  CANIF_E_PARAM_CONTROLLERID to the Det_ReportError service."
+Simulated Change: Error code changed to CANIF_E_PARAM_POINTER — a mistake
+                  introduced during a copy-paste refactor of another API.
+TM Prediction  : CanIf_SetControllerMode
+Expected Output: { CanIf_SetControllerMode }
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+  LINE : 236
+  OLD  : VALIDATE( channel < CANIF_CHANNEL_CNT, CANIF_SET_CONTROLLER_MODE_ID, CANIF_E_PARAM_CONTROLLER );
+  NEW  : VALIDATE( channel < CANIF_CHANNEL_CNT, CANIF_SET_CONTROLLER_MODE_ID, CANIF_E_PARAM_POINTER );
+
+Pass Criterion : Analyzer output == { CanIf_SetControllerMode }.
+AUTOSAR Note   : Det error codes are normatively defined in AUTOSAR SWS CanIf
+                 Table 8-2. Using the wrong code prevents host DET monitors and
+                 diagnostic tools from correctly classifying the fault.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-F-03
+────────────────────────────────────────────────────────────────────────────────
+Title          : Functional — Wrong initial PDU channel mode at startup
+Category       : FUNCTIONAL
+AUTOSAR Req ID : SWS_CANIF_00864
+Req (Original) : "During initialization CanIf shall switch every channel to
+                  CANIF_OFFLINE."
+Simulated Change: Requirement revised to "every channel shall start in
+                  CANIF_ONLINE to avoid startup latency."
+TM Prediction  : CanIf_Init
+Expected Output: { CanIf_Init }
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+  LINE : 140
+  OLD  : CanIf_Global.channelData[i].PduMode = CANIF_GET_OFFLINE;
+  NEW  : CanIf_Global.channelData[i].PduMode = CANIF_GET_ONLINE;
+
+Pass Criterion : Analyzer output == { CanIf_Init }.
+AUTOSAR Note   : SWS_CANIF_00864 is a hard AUTOSAR startup-safety requirement.
+                 Starting channels ONLINE before CanSM has completed the network
+                 startup sequence causes uncontrolled frame flooding on the bus.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-F-04
+────────────────────────────────────────────────────────────────────────────────
+Title          : Functional — CanIf_Transmit() returns wrong value on success
+Category       : FUNCTIONAL
+AUTOSAR Req ID : SWS_CANIF_00162
+Req (Original) : "If the call of Can_Write() returns E_OK the transmit request
+                  service CanIf_Transmit() shall return E_OK."
+Simulated Change: Revised to "CanIf_Transmit() shall always return E_NOT_OK
+                  and let the upper layer poll for TxConfirmation."
+TM Prediction  : CanIf_Transmit
+Expected Output: { CanIf_Transmit }
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+  LINE : 481
+  OLD  : return E_OK;
+  NEW  : return E_NOT_OK;
+
+Pass Criterion : Analyzer output == { CanIf_Transmit }.
+AUTOSAR Note   : AUTOSAR COM and PduR depend on E_OK from CanIf_Transmit() to
+                 confirm frame hand-off. Returning E_NOT_OK unconditionally
+                 triggers spurious retransmission logic in upper layers.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-NF-01
+────────────────────────────────────────────────────────────────────────────────
+Title          : Non-functional — ControllerId type widened from uint8 to uint16
+Category       : NON-FUNCTIONAL
+AUTOSAR Req ID : SWS_CANIF_00308  (implies the ControllerId parameter type)
+Req (Original) : ControllerId typed as uint8 — supports max 255 controllers.
+Simulated Change: "ControllerId shall be uint16 to accommodate future ECU
+                  architectures with more than 255 CAN controllers."
+TM Prediction  : CanIf_SetControllerMode
+Expected Output: { CanIf_SetControllerMode }
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+  LINE : 226
+  OLD  : Std_ReturnType CanIf_SetControllerMode(uint8 Controller,
+  NEW  : Std_ReturnType CanIf_SetControllerMode(uint16 Controller,
+
+Pass Criterion : Analyzer output == { CanIf_SetControllerMode }.
+AUTOSAR Note   : This is an ABI-breaking signature change. All callers of
+                 CanIf_SetControllerMode() must be recompiled. The function
+                 body logic is unchanged but the interface contract changes —
+                 classified as Non-functional because runtime behavior for
+                 valid inputs is identical.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-NF-02
+────────────────────────────────────────────────────────────────────────────────
+Title          : Non-functional — DLC acceptance changed to exact-match only
+Category       : NON-FUNCTIONAL
+AUTOSAR Req ID : SWS_CANIF_00026
+Req (Original) : "CanIf shall accept all received L-PDUs with a Data Length
+                  value equal or greater than the configured Data Length value."
+Simulated Change: "CanIf shall accept received L-PDUs with a Data Length value
+                  EQUAL TO the configured value only (exact match required)."
+TM Prediction  : CanIf_RxIndication
+Expected Output: { CanIf_RxIndication }
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+  LINE : 824
+  OLD  : if (CanDlc < entry->CanIfCanRxPduDlc)
+  NEW  : if (CanDlc != entry->CanIfCanRxPduDlc)
+
+Pass Criterion : Analyzer output == { CanIf_RxIndication }.
+AUTOSAR Note   : The change narrows the acceptance window. Any CAN FD frame
+                 with padding (DLC > configured) would now be dropped. This is
+                 a non-functional change in tolerance policy — the core dispatch
+                 logic below is unaffected.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-C-01
+────────────────────────────────────────────────────────────────────────────────
+Title          : Cosmetic — Editorial wording change in CanIf_RxIndication config
+Category       : COSMETIC
+AUTOSAR Req ID : SWS_CANIF_00423
+Req (Original) : "Configuration of CanIf_RxIndication(): Each Rx L-PDU (see
+                  CanIfRxPduCfg) has to be configured with a corresponding
+                  receive indication service of an upper layer module (see
+                  [SWS_CANIF_00012]) which is called in CanIf_RxIndication()."
+Simulated Change: "Each Rx L-PDU MUST be configured with a corresponding receive
+                  indication service of an upper layer module that is INVOKED
+                  within CanIf_RxIndication()."
+                  (Changes: "has to" → "MUST", "which is called" → "that is
+                  INVOKED within" — normative verb strengthened, no semantic
+                  behavior change.)
+TM Prediction  : CanIf_RxIndication
+Expected Output: { CanIf_RxIndication }
+
+Code Mutation  : NONE — no change to CanIf.c is required.
+
+Pass Criterion : (a) Analyzer output == { CanIf_RxIndication }  [detection pass]
+                 (b) Human engineer reviews the delta and classifies as Cosmetic.
+                 (c) Work item closed with status "No Code Change Required".
+AUTOSAR Note   : The Impact Analyzer is correct to flag this. Classification as
+                 Cosmetic is a human judgment that occurs AFTER the analyzer
+                 raises the impact. This validates the analyzer does not
+                 under-report; over-reporting here is intentional and safe.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-C-02
+────────────────────────────────────────────────────────────────────────────────
+Title          : Cosmetic — Internal cross-reference number updated
+Category       : COSMETIC
+AUTOSAR Req ID : SWS_CANIF_00552
+Req (Original) : "Configuration of <User_RxIndication>(): The name of the API
+                  <User_RxIndication>() which will be called by CanIf shall be
+                  configured for CanIf by parameter CanIfRxPduUserRxIndicationName."
+Simulated Change: The parenthetical internal reference "(see [SWS_CANIF_00012])"
+                  is added to the text for traceability alignment in a new AUTOSAR
+                  release. Content and normative meaning are identical.
+TM Prediction  : CanIf_RxIndication
+Expected Output: { CanIf_RxIndication }
+
+Code Mutation  : NONE — no change to CanIf.c is required.
+
+Pass Criterion : (a) Analyzer output == { CanIf_RxIndication }  [detection pass]
+                 (b) Human engineer reviews and classifies as Cosmetic.
+                 (c) Work item closed with status "No Code Change Required".
+AUTOSAR Note   : Cross-reference updates are common in AUTOSAR version bumps
+                 (e.g., AR 4.0.3 → AR 4.2.2). This case ensures the analyzer
+                 does not silently discard configuration-class requirements.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-XD1N-01
+────────────────────────────────────────────────────────────────────────────────
+Title          : Cross-depend 1→2 — One req change propagates to two functions
+Category       : CROSS-DEPEND (1 Req → N Functions)
+AUTOSAR Req ID : SWS_CANIF_00866
+Req (Original) : "If CanIf_SetControllerMode(ControllerId, CAN_CS_STOPPED) or
+                  CanIf_ControllerBusOff(ControllerId) is called, CanIf shall
+                  set the PDU channel mode of the corresponding channel to
+                  CANIF_TX_OFFLINE."
+Simulated Change: Mode changed to CANIF_OFFLINE — "both events shall now take
+                  the channel fully offline (no Rx either) rather than
+                  TX-offline-only."
+TM Prediction  : CanIf_SetControllerMode, CanIf_ControllerBusOff
+Expected Output: { CanIf_SetControllerMode, CanIf_ControllerBusOff }
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+
+  --- MUTATION in CanIf_SetControllerMode (line 305) ---
+  Context: CANIF_CS_STOPPED case sets PDU mode
+  OLD  : CanIf_SetPduMode(channel, CANIF_SET_OFFLINE);
+  NEW  : CanIf_SetPduMode(channel, CANIF_SET_ONLINE);
+  (wrong mode injected to represent the behavioral change)
+
+  --- NOTE on CanIf_ControllerBusOff ---
+  CanIf_ControllerBusOff() (line 935) calls:
+      CanIf_SetControllerMode(channel, CANIF_CS_STOPPED);
+  which internally triggers the mutated PDU mode set above.
+  Therefore CanIf_ControllerBusOff is impacted transitively via the same
+  requirement. The TM correctly lists both functions for SWS_CANIF_00866.
+
+Pass Criterion : Analyzer output == { CanIf_SetControllerMode,
+                                      CanIf_ControllerBusOff }.
+                 Both functions must be returned. Returning only one is a FAIL.
+AUTOSAR Note   : This is the canonical 1→N cross-dependency scenario. The
+                 requirement text explicitly names two triggering functions,
+                 which is why the TM maps one Req ID to two functions. The
+                 analyzer must not resolve only the first match and stop.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-XD1N-02
+────────────────────────────────────────────────────────────────────────────────
+Title          : Cross-depend 1→3 — One req change propagates to three functions
+Category       : CROSS-DEPEND (1 Req → N Functions)
+AUTOSAR Req ID : SWS_CANIF_00073
+Req (Original) : "For Physical Channels switching to CANIF_OFFLINE mode CanIf
+                  shall: prevent forwarding of transmit requests (CanIf_Transmit),
+                  clear corresponding CanIf transmit buffers, prevent invocation
+                  of receive indication callback services, prevent invocation of
+                  transmit confirmation callback services."
+Simulated Change: "CANIF_OFFLINE mode shall suppress ONLY Tx operations. Rx
+                  indication callbacks shall remain enabled to allow passive
+                  monitoring even when the channel is offline."
+TM Prediction  : CanIf_Transmit, CanIf_TxConfirmation, CanIf_RxIndication
+Expected Output: { CanIf_Transmit, CanIf_TxConfirmation, CanIf_RxIndication }
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+
+  --- MUTATION in CanIf_RxIndication (line 778) ---
+  Context: PDU mode check that drops frames in OFFLINE mode
+  OLD  : if ( (mode == CANIF_GET_OFFLINE) || (mode == CANIF_GET_TX_ONLINE) ||
+              (mode == CANIF_GET_OFFLINE_ACTIVE) )
+  NEW  : if ( (mode == CANIF_GET_TX_ONLINE) ||
+              (mode == CANIF_GET_OFFLINE_ACTIVE) )
+  (CANIF_GET_OFFLINE removed — Rx no longer suppressed in OFFLINE mode)
+
+Pass Criterion : Analyzer output == { CanIf_Transmit, CanIf_TxConfirmation,
+                                      CanIf_RxIndication }.
+                 All three functions must appear. Missing any one is a FAIL.
+AUTOSAR Note   : This is the highest-fan-out single-requirement in the TM.
+                 It validates that the analyzer performs a full TM lookup and
+                 returns the complete set, not just the first matching entry.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-XDN1-01
+────────────────────────────────────────────────────────────────────────────────
+Title          : Cross-depend N→1 — Two reqs changed, same function impacted
+Category       : CROSS-DEPEND (N Reqs → 1 Function)
+AUTOSAR Req IDs: SWS_CANIF_00311 + SWS_CANIF_00774
+Req (Original):
+  SWS_CANIF_00311: "Invalid ControllerId → CANIF_E_PARAM_CONTROLLERID"
+  SWS_CANIF_00774: "Invalid ControllerMode (not CAN_CS_STARTED/SLEEP/STOPPED)
+                    → CANIF_E_PARAM_CTRLMODE"
+Simulated Change:
+  SWS_CANIF_00311: Error code swapped to CANIF_E_PARAM_POINTER (copy-paste bug).
+  SWS_CANIF_00774: ControllerMode validation removed — all values now accepted.
+TM Prediction  : SWS_CANIF_00311 → CanIf_SetControllerMode
+                 SWS_CANIF_00774 → CanIf_SetControllerMode
+Expected Output: { CanIf_SetControllerMode }
+                 (single function, aggregated from two independent req changes)
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+
+  --- MUTATION 1 — SWS_CANIF_00311 (line 236) ---
+  OLD  : VALIDATE( channel < CANIF_CHANNEL_CNT, CANIF_SET_CONTROLLER_MODE_ID, CANIF_E_PARAM_CONTROLLER );
+  NEW  : VALIDATE( channel < CANIF_CHANNEL_CNT, CANIF_SET_CONTROLLER_MODE_ID, CANIF_E_PARAM_POINTER );
+
+  --- MUTATION 2 — SWS_CANIF_00774 (lines 313-315) ---
+  Context: Remove the CANIF_CS_UNINIT fall-through that acts as the invalid-mode
+           catch (the switch default implicitly accepts all values in this impl).
+  OLD  : case CANIF_CS_UNINIT:
+           // Just fall through
+           break;
+  NEW  : case CANIF_CS_UNINIT:
+         default:
+           // All controller mode values now accepted — validation removed
+           break;
+
+Pass Criterion : Analyzer output == { CanIf_SetControllerMode }.
+                 The function must be reported ONCE even though two requirements
+                 triggered it. Duplicates in output are also a FAIL (idempotency
+                 of set union must be enforced by the analyzer).
+AUTOSAR Note   : N→1 tests the analyzer's result-set deduplication. In a real
+                 change sprint, multiple reviewers may update different
+                 requirements that trace to the same function. The developer
+                 must receive ONE consolidated impact notice, not N duplicates.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-XDN1-02
+────────────────────────────────────────────────────────────────────────────────
+Title          : Cross-depend N→1 — Three reqs changed, same function impacted
+Category       : CROSS-DEPEND (N Reqs → 1 Function)
+AUTOSAR Req IDs: SWS_CANIF_00389 + SWS_CANIF_00390 + SWS_CANIF_00902
+Req (Original):
+  SWS_CANIF_00389: "CanIf_RxIndication() shall process software filtering; if
+                    rejected, the receive indication shall end."
+  SWS_CANIF_00390: "After software filtering acceptance, CanIf shall process
+                    the Data Length Check if configured."
+  SWS_CANIF_00902: "Data Length Check shall be processed if enabled globally
+                    AND not disabled per PDU."
+Simulated Change:
+  SWS_CANIF_00389: "Rejected frames shall be LOGGED before being dropped."
+  SWS_CANIF_00390: "Data Length Check shall execute BEFORE software filtering."
+  SWS_CANIF_00902: "Data Length Check is ALWAYS executed regardless of
+                    CanIfPrivateDataLengthCheck and CanIfRxPduDataLengthCheck."
+TM Prediction  : All three → CanIf_RxIndication
+Expected Output: { CanIf_RxIndication }
+
+Code Mutation:
+  FILE : OpenSAR/communication/CanIf/CanIf.c
+
+  --- MUTATION 1 — SWS_CANIF_00390 (reorder DLC before filter, ~line 800) ---
+  Move the #if (CANIF_DLC_CHECK == STD_ON) block ABOVE the software filter
+  block, so DLC is checked before the mask comparison runs.
+
+  --- MUTATION 2 — SWS_CANIF_00902 (remove compile guard, ~line 823) ---
+  OLD  : #if (CANIF_DLC_CHECK == STD_ON)
+           if (CanDlc < entry->CanIfCanRxPduDlc)
+           {
+             VALIDATE_NO_RV(FALSE, CANIF_RXINDICATION_ID, CANIF_E_PARAM_DLC);
+             return;
+           }
+         #endif
+  NEW  :   if (CanDlc < entry->CanIfCanRxPduDlc)    /* always enforced */
+           {
+             VALIDATE_NO_RV(FALSE, CANIF_RXINDICATION_ID, CANIF_E_PARAM_DLC);
+             return;
+           }
+
+  --- MUTATION 3 — SWS_CANIF_00389 (add log before drop, ~line 811) ---
+  OLD  : entry++;
+         continue; // Go to next entry
+  NEW  : DET_REPORTERROR(MODULE_ID_CANIF, 0, CANIF_RXINDICATION_ID,
+                          CANIF_E_PARAM_HRH);  /* log rejected frame */
+         entry++;
+         continue;
+
+Pass Criterion : Analyzer output == { CanIf_RxIndication }.
+                 Reported exactly once despite three independent requirement
+                 changes. All three Req IDs must appear in the analyzer's
+                 "contributing requirements" list attached to the impact report.
+AUTOSAR Note   : This tests the analyzer's ability to process a batch of
+                 correlated requirement changes and produce a single, clean
+                 impact set with full traceability back to all source reqs.
+
+────────────────────────────────────────────────────────────────────────────────
+TC-IMP-CB-01
+────────────────────────────────────────────────────────────────────────────────
+Title          : Combined — Realistic sprint with four simultaneous req changes
+                 spanning all categories and multiple functions
+Category       : COMBINED (F + NF + C + XD-1N)
+AUTOSAR Req IDs: SWS_CANIF_00308 (F)
+                 SWS_CANIF_00026 (NF)
+                 SWS_CANIF_00423 (C)
+                 SWS_CANIF_00073 (XD-1N)
+
+Change Summary:
+  SWS_CANIF_00308 [F]    : SetControllerMode calls wrong CAN API (see TC-F-01)
+  SWS_CANIF_00026 [NF]   : DLC check changes to exact-match (see TC-NF-02)
+  SWS_CANIF_00423 [C]    : Wording editorial update (see TC-C-01)
+  SWS_CANIF_00073 [XD-1N]: OFFLINE mode no longer suppresses Rx (see TC-XD1N-02)
+
+TM Prediction per Req:
+  SWS_CANIF_00308  →  CanIf_SetControllerMode
+  SWS_CANIF_00026  →  CanIf_RxIndication
+  SWS_CANIF_00423  →  CanIf_RxIndication      (cosmetic — no code action)
+  SWS_CANIF_00073  →  CanIf_Transmit, CanIf_TxConfirmation, CanIf_RxIndication
+
+Expected Output (union of all TM lookups):
+  { CanIf_SetControllerMode, CanIf_Transmit,
+    CanIf_TxConfirmation, CanIf_RxIndication }
+
+  NOTE: CanIf_RxIndication appears in three req lookups (00026, 00423, 00073)
+  but MUST appear only once in the output set.
+
+Code Mutations (apply all simultaneously for this scenario):
+  See individual mutations from TC-IMP-F-01 (SWS_CANIF_00308 mutations),
+  TC-IMP-NF-02 (SWS_CANIF_00026 mutation),
+  TC-IMP-XD1N-02 (SWS_CANIF_00073 mutation).
+  TC-IMP-C-01 carries no mutation (cosmetic).
+
+Pass Criterion:
+  (a) Analyzer output set == { CanIf_SetControllerMode, CanIf_Transmit,
+                                CanIf_TxConfirmation, CanIf_RxIndication }
+  (b) Each function in the output is annotated with the Req ID(s) that caused it:
+      CanIf_SetControllerMode  ← SWS_CANIF_00308
+      CanIf_Transmit           ← SWS_CANIF_00073
+      CanIf_TxConfirmation     ← SWS_CANIF_00073
+      CanIf_RxIndication       ← SWS_CANIF_00026, SWS_CANIF_00423,
+                                   SWS_CANIF_00073
+  (c) SWS_CANIF_00423 contributes to CanIf_RxIndication's annotation even
+      though it is cosmetic — classification is a post-analysis engineer task.
+AUTOSAR Note   : This is the highest-fidelity scenario. It mirrors a real-world
+                 AUTOSAR change request where a requirements engineer closes
+                 multiple CRs in one sprint. The analyzer must handle all four
+                 at once, return the correct union set, and provide traceability
+                 links from every impacted function back to its source reqs.
+
+================================================================================
+6. TEST EXECUTION SUMMARY MATRIX
+================================================================================
+
++----------------+---------------------+--------------+---------------------+---------------------+
+| TC ID          | Req ID(s)           | Category     | Expected Functions  | Mutation Applied?   |
++----------------+---------------------+--------------+---------------------+---------------------+
+| TC-IMP-F-01    | SWS_CANIF_00308     | FUNCTIONAL   | SetControllerMode   | YES (6 sites)       |
+| TC-IMP-F-02    | SWS_CANIF_00311     | FUNCTIONAL   | SetControllerMode   | YES (1 site)        |
+| TC-IMP-F-03    | SWS_CANIF_00864     | FUNCTIONAL   | Init                | YES (1 site)        |
+| TC-IMP-F-04    | SWS_CANIF_00162     | FUNCTIONAL   | Transmit            | YES (1 site)        |
+| TC-IMP-NF-01   | SWS_CANIF_00308     | NON-FUNC     | SetControllerMode   | YES (signature)     |
+| TC-IMP-NF-02   | SWS_CANIF_00026     | NON-FUNC     | RxIndication        | YES (1 site)        |
+| TC-IMP-C-01    | SWS_CANIF_00423     | COSMETIC     | RxIndication        | NONE                |
+| TC-IMP-C-02    | SWS_CANIF_00552     | COSMETIC     | RxIndication        | NONE                |
+| TC-IMP-XD1N-01 | SWS_CANIF_00866     | XD (1→2)     | SetCtrlMode+BusOff  | YES (1 site)        |
+| TC-IMP-XD1N-02 | SWS_CANIF_00073     | XD (1→3)     | Tx+TxConf+RxInd     | YES (1 site)        |
+| TC-IMP-XDN1-01 | 00311 + 00774       | XD (2→1)     | SetControllerMode   | YES (2 sites)       |
+| TC-IMP-XDN1-02 | 00389+00390+00902   | XD (3→1)     | RxIndication        | YES (3 sites)       |
+| TC-IMP-CB-01   | 00308+00026+        | COMBINED     | SetCtrlMode+Tx+     | YES (F+NF+XD sites) |
+|                | 00423+00073         | (F+NF+C+XD)  | TxConf+RxInd        | NONE for cosmetic   |
++----------------+---------------------+--------------+---------------------+---------------------+
+
+Functions coverage per test suite:
+  CanIf_Init                 :  TC-F-03
+  CanIf_SetControllerMode    :  TC-F-01, TC-F-02, TC-NF-01, TC-XD1N-01,
+                                TC-XDN1-01, TC-CB-01
+  CanIf_Transmit             :  TC-F-04, TC-XD1N-02, TC-CB-01
+  CanIf_TxConfirmation       :  TC-XD1N-02, TC-CB-01
+  CanIf_RxIndication         :  TC-NF-02, TC-C-01, TC-C-02, TC-XD1N-02,
+                                TC-XDN1-02, TC-CB-01
+  CanIf_ControllerBusOff     :  TC-XD1N-01
+  CanIf_Arc_FindHrhChannel   :  (covered indirectly via RxIndication tests)
+
+================================================================================
+END OF SPECIFICATION
+================================================================================
