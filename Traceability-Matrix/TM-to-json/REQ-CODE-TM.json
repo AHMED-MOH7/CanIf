@@ -1,0 +1,896 @@
+{
+  "metadata": {
+    "module": "CanIf",
+    "standard": "AUTOSAR AR 4.0.3",
+    "source_file": "REQ-CODE-TM.txt",
+    "total_mappings": 104,
+    "total_functions": 20,
+    "generated": "2026-05-05 00:04:00"
+  },
+  "mappings": [
+    {
+      "req_id": "SWS_CANIF_00665",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "HRH enables CanIf to use BasicCAN or FullCAN reception and to indicate a received L-SDU to the target upper layer module"
+    },
+    {
+      "req_id": "SWS_CANIF_00663",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "HRH referencing a BasicCAN reception unit shall enable software filtering in CanIf"
+    },
+    {
+      "req_id": "SWS_CANIF_00666",
+      "functions": [
+        "CanIf_Transmit",
+        "CanIf_TxConfirmation"
+      ],
+      "description": "HTH enables CanIf to use BasicCAN or FullCAN transmission and to confirm a transmitted L-SDU to the target upper layer module"
+    },
+    {
+      "req_id": "SWS_CANIF_00115",
+      "functions": [
+        "CanIf_Arc_FindHrhChannel"
+      ],
+      "description": "CanIf shall use all HRHs and HTHs of one CanDrv as a common single numbering area starting with zero"
+    },
+    {
+      "req_id": "SWS_CANIF_00469",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "CanIf shall configure and store a software acceptance filter for each BasicCAN HRH via CanIfHrhSoftwareFilter"
+    },
+    {
+      "req_id": "SWS_CANIF_00211",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "CanIf shall execute the software acceptance filter for the HRH passed by CanIf_RxIndication()"
+    },
+    {
+      "req_id": "SWS_CANIF_00877",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "CanIf shall compare CanIfRxPduCanId and CanIfRxPduCanIdType against the received Mailbox->CanId to select the correct reception L-SDU"
+    },
+    {
+      "req_id": "SWS_CANIF_00382",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "If the PDU channel mode is CANIF_OFFLINE, CanIf shall report CANIF_E_STOPPED and CanIf_Transmit() shall return E_NOT_OK"
+    },
+    {
+      "req_id": "SWS_CANIF_00085",
+      "functions": [
+        "CanIf_Init"
+      ],
+      "description": "CanIf_Init() shall initialize the global variables and data structures of the CanIf including flags and buffers"
+    },
+    {
+      "req_id": "SWS_CANIF_00864",
+      "functions": [
+        "CanIf_Init"
+      ],
+      "description": "During initialization CanIf shall switch every channel to CANIF_OFFLINE"
+    },
+    {
+      "req_id": "SWS_CANIF_00387",
+      "functions": [
+        "CanIf_Init"
+      ],
+      "description": "CanIf_Init() shall initialize every Transmit L-PDU Buffer assigned to CanIf"
+    },
+    {
+      "req_id": "SWS_CANIF_00308",
+      "functions": [
+        "CanIf_SetControllerMode"
+      ],
+      "description": "CanIf_SetControllerMode() shall call Can_SetControllerMode() for the requested CAN controller"
+    },
+    {
+      "req_id": "SWS_CANIF_00311",
+      "functions": [
+        "CanIf_SetControllerMode"
+      ],
+      "description": "Invalid ControllerId in CanIf_SetControllerMode() shall report CANIF_E_PARAM_CONTROLLERID"
+    },
+    {
+      "req_id": "SWS_CANIF_00774",
+      "functions": [
+        "CanIf_SetControllerMode"
+      ],
+      "description": "Invalid ControllerMode in CanIf_SetControllerMode() shall report CANIF_E_PARAM_CTRLMODE"
+    },
+    {
+      "req_id": "SWS_CANIF_00313",
+      "functions": [
+        "CanIf_GetControllerMode"
+      ],
+      "description": "Invalid ControllerId in CanIf_GetControllerMode() shall report CANIF_E_PARAM_CONTROLLERID"
+    },
+    {
+      "req_id": "SWS_CANIF_00656",
+      "functions": [
+        "CanIf_GetControllerMode"
+      ],
+      "description": "Invalid ControllerModePtr in CanIf_GetControllerMode() shall report CANIF_E_PARAM_POINTER"
+    },
+    {
+      "req_id": "SWS_CANIF_00677",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "If controller is in CAN_CS_STOPPED and the TxPdu is assigned to it, CanIf_Transmit() shall not call Can_Write() and shall return E_NOT_OK"
+    },
+    {
+      "req_id": "SWS_CANIF_00865",
+      "functions": [
+        "CanIf_SetControllerMode"
+      ],
+      "description": "CanIf_SetControllerMode(ControllerId, CAN_CS_SLEEP) shall set the PDU channel mode of the corresponding channel to CANIF_OFFLINE"
+    },
+    {
+      "req_id": "SWS_CANIF_00866",
+      "functions": [
+        "CanIf_SetControllerMode",
+        "CanIf_ControllerBusOff"
+      ],
+      "description": "CanIf_SetControllerMode(ControllerId, CAN_CS_STOPPED) or CanIf_ControllerBusOff() shall set the PDU channel mode to CANIF_TX_OFFLINE"
+    },
+    {
+      "req_id": "SWS_CANIF_00073",
+      "functions": [
+        "CanIf_Transmit",
+        "CanIf_TxConfirmation",
+        "CanIf_RxIndication"
+      ],
+      "description": "CANIF_OFFLINE mode shall prevent Tx forwarding, clear Tx buffers, and suppress all Rx and Tx callback invocations"
+    },
+    {
+      "req_id": "SWS_CANIF_00489",
+      "functions": [
+        "CanIf_Transmit",
+        "CanIf_RxIndication"
+      ],
+      "description": "CANIF_TX_OFFLINE mode shall prevent Tx forwarding and clear Tx buffers while enabling Rx indication callbacks"
+    },
+    {
+      "req_id": "SWS_CANIF_00075",
+      "functions": [
+        "CanIf_SetControllerMode"
+      ],
+      "description": "CANIF_ONLINE mode shall enable Tx forwarding and all Rx and Tx callback invocations"
+    },
+    {
+      "req_id": "SWS_CANIF_00072",
+      "functions": [
+        "CanIf_TxConfirmation"
+      ],
+      "description": "CANIF_TX_OFFLINE_ACTIVE mode shall invoke TxConfirmation callbacks immediately on CanIf_Transmit() instead of buffering or forwarding to CanDrv"
+    },
+    {
+      "req_id": "SWS_CANIF_00118",
+      "functions": [
+        "CanIf_ControllerBusOff"
+      ],
+      "description": "CanIf shall not prohibit the BusOff notification for Tx L-PDUs still pending in the CAN HW Object after a mode change to CANIF_TX_OFFLINE or CANIF_OFFLINE"
+    },
+    {
+      "req_id": "SWS_CANIF_00341",
+      "functions": [
+        "CanIf_SetPduMode"
+      ],
+      "description": "Invalid ControllerId in CanIf_SetPduMode() shall report CANIF_E_PARAM_CONTROLLERID"
+    },
+    {
+      "req_id": "SWS_CANIF_00860",
+      "functions": [
+        "CanIf_SetPduMode"
+      ],
+      "description": "Invalid PduModeRequest in CanIf_SetPduMode() shall report CANIF_E_PARAM_PDU_MODE"
+    },
+    {
+      "req_id": "SWS_CANIF_00874",
+      "functions": [
+        "CanIf_SetPduMode"
+      ],
+      "description": "CanIf_SetPduMode() shall not accept any request and shall return E_NOT_OK if the controller mode is not CAN_CS_STARTED"
+    },
+    {
+      "req_id": "SWS_CANIF_00346",
+      "functions": [
+        "CanIf_GetPduMode"
+      ],
+      "description": "Invalid ControllerId in CanIf_GetPduMode() shall report CANIF_E_PARAM_CONTROLLERID"
+    },
+    {
+      "req_id": "SWS_CANIF_00657",
+      "functions": [
+        "CanIf_GetPduMode"
+      ],
+      "description": "Invalid PduModePtr in CanIf_GetPduMode() shall report CANIF_E_PARAM_POINTER"
+    },
+    {
+      "req_id": "SWS_CANIF_00317",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "CanIf_Transmit() shall not accept a request if the controller mode is not CAN_CS_STARTED and the channel transmit path is not online or offline-active"
+    },
+    {
+      "req_id": "SWS_CANIF_00318",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "CanIf_Transmit() shall call Can_Write() with the HTH, swPduHandle set to CanTxPduId, length, CanId, and SduDataPtr from PduInfoPtr"
+    },
+    {
+      "req_id": "SWS_CANIF_00243",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "CanIf shall set the two MSBs of the CanId before calling Can_Write() based on CanIfTxPduCanIdType"
+    },
+    {
+      "req_id": "SWS_CANIF_00162",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "CanIf_Transmit() shall return E_OK if Can_Write() returns E_OK"
+    },
+    {
+      "req_id": "SWS_CANIF_00319",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "Invalid TxPduId in CanIf_Transmit() shall report CANIF_E_INVALID_TXPDUID"
+    },
+    {
+      "req_id": "SWS_CANIF_00320",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "Invalid PduInfoPtr in CanIf_Transmit() shall report CANIF_E_PARAM_POINTER"
+    },
+    {
+      "req_id": "SWS_CANIF_00882",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "CanIf_Transmit() shall accept a NULL SduDataPtr if CanIfTxPduTriggerTransmit is TRUE"
+    },
+    {
+      "req_id": "SWS_CANIF_00893",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "CanIf_Transmit() shall report CANIF_E_DATA_LENGTH_MISMATCH if SduLength exceeds the maximum CAN or CAN FD frame length"
+    },
+    {
+      "req_id": "SWS_CANIF_00894",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "CanIf_Transmit() shall transmit data up to the global PDU length and discard the rest when CanIfTxPduTruncation is enabled"
+    },
+    {
+      "req_id": "SWS_CANIF_00900",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "CanIf_Transmit() shall report CANIF_E_TXPDU_LENGTH_EXCEEDED and return E_NOT_OK if SduLength exceeds the global PDU length and CanIfTxPduTruncation is disabled"
+    },
+    {
+      "req_id": "SWS_CANIF_00381",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "If Can_Write() returns CAN_BUSY for a direct Tx PDU, CanIf shall attempt to store the Tx L-PDU in the assigned CanIfTxBuffer"
+    },
+    {
+      "req_id": "SWS_CANIF_00881",
+      "functions": [
+        "CanIf_Transmit"
+      ],
+      "description": "If Can_Write() returns CAN_BUSY for a triggered Tx PDU, CanIf shall attempt to store the Transmit Request in the assigned CanIfTxBuffer"
+    },
+    {
+      "req_id": "SWS_CANIF_00386",
+      "functions": [
+        "CanIf_TxConfirmation"
+      ],
+      "description": "During TxConfirmation CanIf shall evaluate whether pending Tx L-PDUs or Transmit Requests are stored in the CanIfTxBuffers assigned to the freed HTH"
+    },
+    {
+      "req_id": "SWS_CANIF_00485",
+      "functions": [
+        "CanIf_SetControllerMode"
+      ],
+      "description": "On entering CAN_CS_STOPPED CanIf shall clear the Tx buffers assigned to the corresponding CAN Controller"
+    },
+    {
+      "req_id": "SWS_CANIF_00739",
+      "functions": [
+        "CanIf_SetControllerMode"
+      ],
+      "description": "On entering CAN_CS_STOPPED CanIf shall call <User_TxConfirmation>(E_NOT_OK) for every outstanding TxConfirmation assigned to that controller"
+    },
+    {
+      "req_id": "SWS_CANIF_00383",
+      "functions": [
+        "CanIf_TxConfirmation"
+      ],
+      "description": "CanIf_TxConfirmation() shall identify the upper layer linked to the transmitted L-PDU and notify it via <User_TxConfirmation>(E_OK)"
+    },
+    {
+      "req_id": "SWS_CANIF_00412",
+      "functions": [
+        "CanIf_TxConfirmation"
+      ],
+      "description": "If CanIf is not initialized, CanIf_TxConfirmation() shall not call <User_TxConfirmation>() or set the Tx confirmation status"
+    },
+    {
+      "req_id": "SWS_CANIF_00410",
+      "functions": [
+        "CanIf_TxConfirmation"
+      ],
+      "description": "Invalid CanTxPduId in CanIf_TxConfirmation() shall report CANIF_E_PARAM_LPDU"
+    },
+    {
+      "req_id": "SWS_CANIF_00551",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "If CanIfTxPduUserTxConfirmationUL is set to CDD, the <User_TxConfirmation>() API name shall be configured via CanIfTxPduUserTxConfirmationName"
+    },
+    {
+      "req_id": "SWS_CANIF_00389",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "CanIf_RxIndication() shall process software filtering on the received L-PDU; if rejected, the receive indication shall end for that call"
+    },
+    {
+      "req_id": "SWS_CANIF_00390",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "After software filtering acceptance in CanIf_RxIndication(), CanIf shall process the Data Length Check if configured"
+    },
+    {
+      "req_id": "SWS_CANIF_00030",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "If the received L-PDU CanId is configured to be received, CanIf shall accept it and derive the corresponding Rx L-PDU from the found CanId"
+    },
+    {
+      "req_id": "SWS_CANIF_00852",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "Software filter shall prefer a single CanId over a range and a smaller range over a larger one when selecting the matching Rx L-PDU"
+    },
+    {
+      "req_id": "SWS_CANIF_00026",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "CanIf shall accept received L-PDUs with a Data Length equal or greater than the configured CanIfRxPduDataLength value"
+    },
+    {
+      "req_id": "SWS_CANIF_00902",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "Data Length Check shall be processed only if enabled globally via CanIfPrivateDataLengthCheck and not disabled per PDU via CanIfRxPduDataLengthCheck"
+    },
+    {
+      "req_id": "SWS_CANIF_00168",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "If the Data Length Check rejects a received L-PDU, CanIf shall report CANIF_E_INVALID_DATA_LENGTH"
+    },
+    {
+      "req_id": "SWS_CANIF_00829",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "CanIf shall pass the received length value to the target upper layer module if the Data Length Check is passed"
+    },
+    {
+      "req_id": "SWS_CANIF_00830",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "CanIf shall pass the received length value to the target upper layer module if the Data Length Check is not configured"
+    },
+    {
+      "req_id": "SWS_CANIF_00056",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "After Data Length Check acceptance, CanIf shall identify whether a target upper layer module is configured to receive the Rx indication"
+    },
+    {
+      "req_id": "SWS_CANIF_00135",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "CanIf shall call the configured receive indication callback service with parameters derived from CanIf_RxIndication()"
+    },
+    {
+      "req_id": "SWS_CANIF_00415",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "Within CanIf_RxIndication() CanIf shall route the indication to the configured upper layer target service"
+    },
+    {
+      "req_id": "SWS_CANIF_00416",
+      "functions": [
+        "CanIf_Arc_FindHrhChannel"
+      ],
+      "description": "Invalid Mailbox->Hoh passed to CanIf_RxIndication() shall report CANIF_E_PARAM_HOH"
+    },
+    {
+      "req_id": "SWS_CANIF_00417",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "Invalid Mailbox->CanId passed to CanIf_RxIndication() shall report CANIF_E_PARAM_CANID"
+    },
+    {
+      "req_id": "SWS_CANIF_00419",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "Invalid PduInfoPtr or Mailbox passed to CanIf_RxIndication() shall report CANIF_E_PARAM_POINTER"
+    },
+    {
+      "req_id": "SWS_CANIF_00421",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "If CanIf is not initialized, CanIf_RxIndication() shall not execute Rx indication handling"
+    },
+    {
+      "req_id": "SWS_CANIF_00423",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "Each Rx L-PDU shall be configured with a corresponding receive indication service of an upper layer module called in CanIf_RxIndication()"
+    },
+    {
+      "req_id": "SWS_CANIF_00552",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "The name of the <User_RxIndication>() API called by CanIf shall be configured via CanIfRxPduUserRxIndicationName"
+    },
+    {
+      "req_id": "SWS_CANIF_00442",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "If CanIfRxPduUserRxIndicationUL is set to PDUR, CanIfRxPduUserRxIndicationName must be PduR_CanIfRxIndication"
+    },
+    {
+      "req_id": "SWS_CANIF_00445",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "If CanIfRxPduUserRxIndicationUL is set to CAN_NM, CanIfRxPduUserRxIndicationName must be CanNm_RxIndication"
+    },
+    {
+      "req_id": "SWS_CANIF_00448",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "If CanIfRxPduUserRxIndicationUL is set to CAN_TP, CanIfRxPduUserRxIndicationName must be CanTp_RxIndication"
+    },
+    {
+      "req_id": "SWS_CANIF_00554",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "If CanIfRxPduUserRxIndicationUL is set to J1939TP, CanIfRxPduUserRxIndicationName must be J1939Tp_RxIndication"
+    },
+    {
+      "req_id": "SWS_CANIF_00557",
+      "functions": [
+        "CanIf_RxIndication"
+      ],
+      "description": "If CanIfRxPduUserRxIndicationUL is set to CDD, the <User_RxIndication>() API name shall be configured via CanIfRxPduUserRxIndicationName"
+    },
+    {
+      "req_id": "SWS_CANIF_00324",
+      "functions": [
+        "CanIf_ReadRxPduData"
+      ],
+      "description": "CanIf_ReadRxPduData() shall return E_NOT_OK if the controller is not in CAN_CS_STARTED or the channel is not in Rx-online mode"
+    },
+    {
+      "req_id": "SWS_CANIF_00325",
+      "functions": [
+        "CanIf_ReadRxPduData"
+      ],
+      "description": "Invalid CanIfRxSduId in CanIf_ReadRxPduData() shall report CANIF_E_INVALID_RXPDUID"
+    },
+    {
+      "req_id": "SWS_CANIF_00326",
+      "functions": [
+        "CanIf_ReadRxPduData"
+      ],
+      "description": "Invalid CanIfRxInfoPtr in CanIf_ReadRxPduData() shall report CANIF_E_PARAM_POINTER"
+    },
+    {
+      "req_id": "SWS_CANIF_00393",
+      "functions": [
+        "CanIf_ReadTxNotifStatus"
+      ],
+      "description": "CanIf_ReadTxNotifStatus() shall reset the Tx notification status when CanIfPublicReadTxPduNotifyStatusApi and CanIfTxPduReadNotifyStatus are TRUE"
+    },
+    {
+      "req_id": "SWS_CANIF_00331",
+      "functions": [
+        "CanIf_ReadTxNotifStatus"
+      ],
+      "description": "Out-of-range or unconfigured CanIfTxSduId in CanIf_ReadTxNotifStatus() shall report CANIF_E_INVALID_TXPDUID"
+    },
+    {
+      "req_id": "SWS_CANIF_00394",
+      "functions": [
+        "CanIf_ReadRxNotifStatus"
+      ],
+      "description": "CanIf_ReadRxNotifStatus() shall reset the Rx notification status when CanIfPublicReadRxPduNotifyStatusApi and CanIfRxPduReadNotifyStatus are TRUE"
+    },
+    {
+      "req_id": "SWS_CANIF_00336",
+      "functions": [
+        "CanIf_ReadRxNotifStatus"
+      ],
+      "description": "Out-of-range or unconfigured CanIfRxSduId in CanIf_ReadRxNotifStatus() shall report CANIF_E_INVALID_RXPDUID"
+    },
+    {
+      "req_id": "SWS_CANIF_00188",
+      "functions": [
+        "CanIf_SetDynamicTxId"
+      ],
+      "description": "CanIf shall process the two MSBs of the CanId to determine the CanId type and how the dynamic Tx L-PDU shall be transmitted"
+    },
+    {
+      "req_id": "SWS_CANIF_00673",
+      "functions": [
+        "CanIf_SetDynamicTxId"
+      ],
+      "description": "CanIf shall guarantee CanId data consistency in CanIf_SetDynamicTxId() against pre-emptive CanIf_Transmit() calls on the same L-PDU"
+    },
+    {
+      "req_id": "SWS_CANIF_00352",
+      "functions": [
+        "CanIf_SetDynamicTxId"
+      ],
+      "description": "Invalid CanIfTxSduId in CanIf_SetDynamicTxId() shall report CANIF_E_INVALID_TXPDUID"
+    },
+    {
+      "req_id": "SWS_CANIF_00353",
+      "functions": [
+        "CanIf_SetDynamicTxId"
+      ],
+      "description": "Invalid CanId in CanIf_SetDynamicTxId() shall report CANIF_E_PARAM_CANID"
+    },
+    {
+      "req_id": "SWS_CANIF_00355",
+      "functions": [
+        "CanIf_SetDynamicTxId"
+      ],
+      "description": "If CanIf is not initialized, CanIf_SetDynamicTxId() shall not execute Tx CanId reconfiguration"
+    },
+    {
+      "req_id": "SWS_CANIF_00724",
+      "functions": [
+        "CanIf_ControllerBusOff"
+      ],
+      "description": "CanIf_ControllerBusOff() shall call CanSM_ControllerBusOff() or a CDD when a BusOff event is indicated by CanDrv"
+    },
+    {
+      "req_id": "SWS_CANIF_00429",
+      "functions": [
+        "CanIf_ControllerBusOff"
+      ],
+      "description": "Invalid ControllerId in CanIf_ControllerBusOff() shall report CANIF_E_PARAM_CONTROLLERID"
+    },
+    {
+      "req_id": "SWS_CANIF_00431",
+      "functions": [
+        "CanIf_ControllerBusOff"
+      ],
+      "description": "If CanIf is not initialized, CanIf_ControllerBusOff() shall not execute BusOff notification"
+    },
+    {
+      "req_id": "SWS_CANIF_00395",
+      "functions": [
+        "CanIf_CheckWakeup"
+      ],
+      "description": "CanIf_CheckWakeup() shall query CanDrvs and CanTrcvs via Can_CheckWakeup() or CanTrcv_CheckWakeup() to identify the wake-up source"
+    },
+    {
+      "req_id": "SWS_CANIF_00678",
+      "functions": [
+        "CanIf_CheckWakeup"
+      ],
+      "description": "CanIf_CheckWakeup() shall return E_NOT_OK if all Can_CheckWakeup()/CanTrcv_CheckWakeup() calls return E_NOT_OK"
+    },
+    {
+      "req_id": "SWS_CANIF_00179",
+      "functions": [
+        "CanIf_CheckValidation"
+      ],
+      "description": "<User_ValidateWakeupEvent>(sources) shall be called during CanIf_CheckValidation() if the first valid RxIndication event is stored for the corresponding controller"
+    },
+    {
+      "req_id": "SWS_CANIF_00756",
+      "functions": [
+        "CanIf_SetControllerMode"
+      ],
+      "description": "On entering CAN_CS_SLEEP the stored first-valid-RxIndication wake-up event shall be cleared"
+    },
+    {
+      "req_id": "SWS_CANIF_00398",
+      "functions": [
+        "CanIf_CheckWakeup"
+      ],
+      "description": "Invalid WakeupSource in CanIf_CheckWakeup() shall report CANIF_E_PARAM_WAKEUPSOURCE"
+    },
+    {
+      "req_id": "SWS_CANIF_00404",
+      "functions": [
+        "CanIf_CheckValidation"
+      ],
+      "description": "Invalid WakeupSource in CanIf_CheckValidation() shall report CANIF_E_PARAM_WAKEUPSOURCE"
+    },
+    {
+      "req_id": "SWS_CANIF_00358",
+      "functions": [
+        "CanIf_SetTransceiverMode"
+      ],
+      "description": "CanIf_SetTrcvMode() shall call CanTrcv_SetOpMode(Transceiver, OpMode) on the corresponding transceiver driver"
+    },
+    {
+      "req_id": "SWS_CANIF_00538",
+      "functions": [
+        "CanIf_SetTransceiverMode"
+      ],
+      "description": "Invalid TransceiverId in CanIf_SetTrcvMode() shall report CANIF_E_PARAM_TRCV"
+    },
+    {
+      "req_id": "SWS_CANIF_00648",
+      "functions": [
+        "CanIf_SetTransceiverMode"
+      ],
+      "description": "Invalid TransceiverMode in CanIf_SetTrcvMode() shall report CANIF_E_PARAM_TRCVMODE"
+    },
+    {
+      "req_id": "SWS_CANIF_00363",
+      "functions": [
+        "CanIf_GetTransceiverMode"
+      ],
+      "description": "CanIf_GetTrcvMode() shall call CanTrcv_GetOpMode(Transceiver, OpMode) on the corresponding transceiver driver"
+    },
+    {
+      "req_id": "SWS_CANIF_00364",
+      "functions": [
+        "CanIf_GetTransceiverMode"
+      ],
+      "description": "Invalid TransceiverId in CanIf_GetTrcvMode() shall report CANIF_E_PARAM_TRCV"
+    },
+    {
+      "req_id": "SWS_CANIF_00650",
+      "functions": [
+        "CanIf_GetTransceiverMode"
+      ],
+      "description": "Invalid TransceiverModePtr in CanIf_GetTrcvMode() shall report CANIF_E_PARAM_POINTER"
+    },
+    {
+      "req_id": "SWS_CANIF_00368",
+      "functions": [
+        "CanIf_GetTrcvWakeupReason"
+      ],
+      "description": "CanIf_GetTrcvWakeupReason() shall call CanTrcv_GetBusWuReason(Transceiver, Reason) on the corresponding transceiver driver"
+    },
+    {
+      "req_id": "SWS_CANIF_00537",
+      "functions": [
+        "CanIf_GetTrcvWakeupReason"
+      ],
+      "description": "Invalid TransceiverId in CanIf_GetTrcvWakeupReason() shall report CANIF_E_PARAM_TRCV"
+    },
+    {
+      "req_id": "SWS_CANIF_00649",
+      "functions": [
+        "CanIf_GetTrcvWakeupReason"
+      ],
+      "description": "Invalid TrcvWuReasonPtr in CanIf_GetTrcvWakeupReason() shall report CANIF_E_PARAM_POINTER"
+    },
+    {
+      "req_id": "SWS_CANIF_00372",
+      "functions": [
+        "CanIf_SetTransceiverWakeupMode"
+      ],
+      "description": "CanIf_SetTrcvWakeupMode() shall call CanTrcv_SetWakeupMode(Transceiver, TrcvWakeupMode) on the corresponding transceiver driver"
+    },
+    {
+      "req_id": "SWS_CANIF_00535",
+      "functions": [
+        "CanIf_SetTransceiverWakeupMode"
+      ],
+      "description": "Invalid TransceiverId in CanIf_SetTrcvWakeupMode() shall report CANIF_E_PARAM_TRCV"
+    },
+    {
+      "req_id": "SWS_CANIF_00536",
+      "functions": [
+        "CanIf_SetTransceiverWakeupMode"
+      ],
+      "description": "Invalid TrcvWakeupMode in CanIf_SetTrcvWakeupMode() shall report CANIF_E_PARAM_TRCVWAKEUPMODE"
+    }
+  ],
+  "function_index": {
+    "CanIf_Arc_FindHrhChannel": [
+      "SWS_CANIF_00115",
+      "SWS_CANIF_00416"
+    ],
+    "CanIf_CheckValidation": [
+      "SWS_CANIF_00179",
+      "SWS_CANIF_00404"
+    ],
+    "CanIf_CheckWakeup": [
+      "SWS_CANIF_00395",
+      "SWS_CANIF_00678",
+      "SWS_CANIF_00398"
+    ],
+    "CanIf_ControllerBusOff": [
+      "SWS_CANIF_00866",
+      "SWS_CANIF_00118",
+      "SWS_CANIF_00724",
+      "SWS_CANIF_00429",
+      "SWS_CANIF_00431"
+    ],
+    "CanIf_GetControllerMode": [
+      "SWS_CANIF_00313",
+      "SWS_CANIF_00656"
+    ],
+    "CanIf_GetPduMode": [
+      "SWS_CANIF_00346",
+      "SWS_CANIF_00657"
+    ],
+    "CanIf_GetTransceiverMode": [
+      "SWS_CANIF_00363",
+      "SWS_CANIF_00364",
+      "SWS_CANIF_00650"
+    ],
+    "CanIf_GetTrcvWakeupReason": [
+      "SWS_CANIF_00368",
+      "SWS_CANIF_00537",
+      "SWS_CANIF_00649"
+    ],
+    "CanIf_Init": [
+      "SWS_CANIF_00085",
+      "SWS_CANIF_00864",
+      "SWS_CANIF_00387"
+    ],
+    "CanIf_ReadRxNotifStatus": [
+      "SWS_CANIF_00394",
+      "SWS_CANIF_00336"
+    ],
+    "CanIf_ReadRxPduData": [
+      "SWS_CANIF_00324",
+      "SWS_CANIF_00325",
+      "SWS_CANIF_00326"
+    ],
+    "CanIf_ReadTxNotifStatus": [
+      "SWS_CANIF_00393",
+      "SWS_CANIF_00331"
+    ],
+    "CanIf_RxIndication": [
+      "SWS_CANIF_00665",
+      "SWS_CANIF_00663",
+      "SWS_CANIF_00469",
+      "SWS_CANIF_00211",
+      "SWS_CANIF_00877",
+      "SWS_CANIF_00073",
+      "SWS_CANIF_00489",
+      "SWS_CANIF_00551",
+      "SWS_CANIF_00389",
+      "SWS_CANIF_00390",
+      "SWS_CANIF_00030",
+      "SWS_CANIF_00852",
+      "SWS_CANIF_00026",
+      "SWS_CANIF_00902",
+      "SWS_CANIF_00168",
+      "SWS_CANIF_00829",
+      "SWS_CANIF_00830",
+      "SWS_CANIF_00056",
+      "SWS_CANIF_00135",
+      "SWS_CANIF_00415",
+      "SWS_CANIF_00417",
+      "SWS_CANIF_00419",
+      "SWS_CANIF_00421",
+      "SWS_CANIF_00423",
+      "SWS_CANIF_00552",
+      "SWS_CANIF_00442",
+      "SWS_CANIF_00445",
+      "SWS_CANIF_00448",
+      "SWS_CANIF_00554",
+      "SWS_CANIF_00557"
+    ],
+    "CanIf_SetControllerMode": [
+      "SWS_CANIF_00308",
+      "SWS_CANIF_00311",
+      "SWS_CANIF_00774",
+      "SWS_CANIF_00865",
+      "SWS_CANIF_00866",
+      "SWS_CANIF_00075",
+      "SWS_CANIF_00485",
+      "SWS_CANIF_00739",
+      "SWS_CANIF_00756"
+    ],
+    "CanIf_SetDynamicTxId": [
+      "SWS_CANIF_00188",
+      "SWS_CANIF_00673",
+      "SWS_CANIF_00352",
+      "SWS_CANIF_00353",
+      "SWS_CANIF_00355"
+    ],
+    "CanIf_SetPduMode": [
+      "SWS_CANIF_00341",
+      "SWS_CANIF_00860",
+      "SWS_CANIF_00874"
+    ],
+    "CanIf_SetTransceiverMode": [
+      "SWS_CANIF_00358",
+      "SWS_CANIF_00538",
+      "SWS_CANIF_00648"
+    ],
+    "CanIf_SetTransceiverWakeupMode": [
+      "SWS_CANIF_00372",
+      "SWS_CANIF_00535",
+      "SWS_CANIF_00536"
+    ],
+    "CanIf_Transmit": [
+      "SWS_CANIF_00666",
+      "SWS_CANIF_00382",
+      "SWS_CANIF_00677",
+      "SWS_CANIF_00073",
+      "SWS_CANIF_00489",
+      "SWS_CANIF_00317",
+      "SWS_CANIF_00318",
+      "SWS_CANIF_00243",
+      "SWS_CANIF_00162",
+      "SWS_CANIF_00319",
+      "SWS_CANIF_00320",
+      "SWS_CANIF_00882",
+      "SWS_CANIF_00893",
+      "SWS_CANIF_00894",
+      "SWS_CANIF_00900",
+      "SWS_CANIF_00381",
+      "SWS_CANIF_00881"
+    ],
+    "CanIf_TxConfirmation": [
+      "SWS_CANIF_00666",
+      "SWS_CANIF_00073",
+      "SWS_CANIF_00072",
+      "SWS_CANIF_00386",
+      "SWS_CANIF_00383",
+      "SWS_CANIF_00412",
+      "SWS_CANIF_00410"
+    ]
+  }
+}
