@@ -1,0 +1,19 @@
+# TM Automation Pipeline — Python dependencies
+# Install with:  pip install -r requirements_tm.txt
+#
+# Note: code parsing and requirement parsing are handled by the upstream
+# SDLC pipeline (Static Analysis + Requirement Analysis phases).
+# Their dependencies (tree-sitter, pandas, beautifulsoup4) are not needed here.
+
+# LLM providers (install at least one)
+anthropic>=0.28.0          # Anthropic Claude API (default provider)
+openai>=1.30.0             # OpenAI / Azure OpenAI (optional)
+
+# TF-IDF shortlist — Pass 1 of the mapping strategy
+scikit-learn>=1.4.0
+numpy>=1.26.0
+
+# Config & utilities
+pyyaml>=6.0.0
+watchdog>=4.0.0            # file-watcher (watch mode only)
+tiktoken>=0.7.0            # token counting for prompt size management

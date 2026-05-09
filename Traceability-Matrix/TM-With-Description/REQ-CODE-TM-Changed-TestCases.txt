@@ -1,0 +1,177 @@
+Changed Requirements Test Cases
+Source: REQ-CODE-TM.txt
+Scope: Change-focused test cases covering functional, non-functional, cosmetic,
+syntax, return-value, and cross-dependency changes.
+
+TC-CHG-001
+Change type: Different return values
+Cross dependency: None
+Related Req IDs: SWS_CANIF_00395, SWS_CANIF_00678
+Changed requirement:
+  CanIf_CheckWakeup shall return E_OK if any called Can_CheckWakeup() or
+  CanTrcv_CheckWakeup() returns E_OK. It shall return E_NOT_OK only if all
+  called drivers return E_NOT_OK.
+Preconditions:
+  - Two CAN controllers configured, each with a separate CanDrv/CanTrcv.
+  - WakeupSource maps to both drivers.
+Steps:
+  1. Stub Can_CheckWakeup() for Driver A to return E_NOT_OK.
+  2. Stub CanTrcv_CheckWakeup() for Driver B to return E_OK.
+  3. Call CanIf_CheckWakeup(WakeupSource).
+Expected result:
+  - CanIf_CheckWakeup returns E_OK.
+  - Both drivers are queried exactly once.
+  - No DET error is reported.
+
+TC-CHG-002
+Change type: Functional
+Cross dependency: None
+Related Req IDs: SWS_CANIF_00026, SWS_CANIF_00390, SWS_CANIF_00168
+Changed requirement:
+  Data Length Check shall accept only L-PDUs with length equal to
+  CanIfRxPduDataLength (not greater-than-or-equal). Any mismatch shall be
+  rejected and reported as CANIF_E_INVALID_DATA_LENGTH.
+Preconditions:
+  - CanIfPrivateDataLengthCheck = TRUE.
+  - CanIfRxPduDataLengthCheck = TRUE.
+  - CanIfRxPduDataLength for RxPduId X is 8.
+Steps:
+  1. Call CanIf_RxIndication() with SduLength = 8 for RxPduId X.
+  2. Call CanIf_RxIndication() with SduLength = 7 for RxPduId X.
+  3. Call CanIf_RxIndication() with SduLength = 9 for RxPduId X.
+Expected result:
+  - Step 1: Rx indication is forwarded to upper layer.
+  - Step 2 and 3: Rx indication is rejected and DET reports
+    CANIF_E_INVALID_DATA_LENGTH.
+
+TC-CHG-003
+Change type: Non-functional
+Cross dependency: None
+Related Req IDs: SWS_CANIF_00389, SWS_CANIF_00390, SWS_CANIF_00829
+Changed requirement:
+  For an accepted L-PDU, the full Rx indication path (software filtering,
+  data length check, and upper-layer callback) shall complete within 2 ms.
+Preconditions:
+  - Software filtering enabled for HRH.
+  - Data length check enabled.
+  - Upper layer callback configured and instrumented with a timestamp hook.
+Steps:
+  1. Start a high-resolution timer at entry of CanIf_RxIndication().
+  2. Provide an L-PDU that passes filtering and length check.
+  3. Stop the timer when the upper layer callback returns.
+Expected result:
+  - End-to-end duration is <= 2 ms.
+  - Rx indication is forwarded with correct length.
+
+TC-CHG-004
+Change type: Cosmetic
+Cross dependency: None
+Related Req IDs: SWS_CANIF_00417
+Changed requirement:
+  DET log entry for CANIF_E_PARAM_CANID shall include the invalid CanId in
+  hex format (e.g., "CANIF_E_PARAM_CANID: 0x1FFFFFFF").
+Preconditions:
+  - DET logging enabled and captured to a log buffer.
+Steps:
+  1. Call CanIf_RxIndication() with Mailbox->CanId set to an invalid value.
+  2. Read the last DET log entry.
+Expected result:
+  - CANIF_E_PARAM_CANID is reported.
+  - Log message contains the invalid CanId in hex.
+
+TC-CHG-005
+Change type: Syntax
+Cross dependency: None
+Related Req IDs: SWS_CANIF_00358, SWS_CANIF_00648
+Changed requirement:
+  CanIf_SetTrcvMode shall accept a new TransceiverMode value
+  CANTRCV_TRCVMODE_LISTEN_ONLY and forward it to CanTrcv_SetOpMode().
+Preconditions:
+  - TransceiverId T is valid and configured.
+Steps:
+  1. Call CanIf_SetTrcvMode(T, CANTRCV_TRCVMODE_LISTEN_ONLY).
+  2. Call CanIf_SetTrcvMode(T, 0xFF) as an invalid mode.
+Expected result:
+  - Step 1: CanTrcv_SetOpMode(T, CANTRCV_TRCVMODE_LISTEN_ONLY) is called and
+    CanIf_SetTrcvMode returns E_OK.
+  - Step 2: DET reports CANIF_E_PARAM_TRCVMODE and CanIf_SetTrcvMode returns
+    E_NOT_OK.
+
+TC-CHG-006
+Change type: Functional, Cross dependency (1-n)
+Cross dependency: 1-n (single change affects multiple requirements)
+Related Req IDs: SWS_CANIF_00865, SWS_CANIF_00073, SWS_CANIF_00485, SWS_CANIF_00739
+Changed requirement:
+  When CanIf_SetControllerMode(ControllerId, CAN_CS_SLEEP) is called, the
+  channel shall switch to CANIF_OFFLINE, clear all Tx buffers, and suppress
+  upper-layer Tx confirmation callbacks for any pending Tx PDUs.
+Preconditions:
+  - ControllerId C is valid and in CAN_CS_STARTED.
+  - Two Tx PDUs are pending in CanIfTxBuffers for controller C.
+Steps:
+  1. Call CanIf_SetControllerMode(C, CAN_CS_SLEEP).
+  2. Call CanIf_Transmit() for a PDU mapped to controller C.
+  3. Trigger CanIf_TxConfirmation() for a PDU previously pending on controller C.
+Expected result:
+  - Channel mode becomes CANIF_OFFLINE.
+  - Tx buffers for controller C are cleared.
+  - CanIf_Transmit returns E_NOT_OK and does not call Can_Write().
+  - Upper layer Tx confirmation callback is not invoked.
+
+TC-CHG-007
+Change type: Functional, Cross dependency (n-1)
+Cross dependency: n-1 (multiple requirements consolidated into one behavior)
+Related Req IDs: SWS_CANIF_00311, SWS_CANIF_00313, SWS_CANIF_00341, SWS_CANIF_00346
+Changed requirement:
+  Any API receiving an invalid ControllerId shall report
+  CANIF_E_PARAM_CONTROLLERID and return E_NOT_OK consistently across
+  CanIf_SetControllerMode, CanIf_GetControllerMode, CanIf_SetPduMode, and
+  CanIf_GetPduMode.
+Preconditions:
+  - ControllerId 255 is invalid.
+Steps:
+  1. Call CanIf_SetControllerMode(255, CAN_CS_STARTED).
+  2. Call CanIf_GetControllerMode(255, &Mode).
+  3. Call CanIf_SetPduMode(255, CANIF_ONLINE).
+  4. Call CanIf_GetPduMode(255, &PduMode).
+Expected result:
+  - Each call reports CANIF_E_PARAM_CONTROLLERID.
+  - Each call returns E_NOT_OK.
+
+TC-CHG-008
+Change type: Different return values
+Cross dependency: None
+Related Req IDs: SWS_CANIF_00381, SWS_CANIF_00881
+Changed requirement:
+  If Can_Write() returns CAN_BUSY and buffering is enabled, CanIf_Transmit
+  shall return E_OK when the PDU is successfully buffered; it shall return
+  E_NOT_OK if the buffer is full and the request is dropped.
+Preconditions:
+  - Transmit buffering enabled.
+  - A Tx buffer exists for the TxPduId under test.
+Steps:
+  1. Configure Can_Write() to return CAN_BUSY and provide free buffer space.
+  2. Call CanIf_Transmit(TxPduId, PduInfoPtr).
+  3. Configure Can_Write() to return CAN_BUSY and fill the buffer to capacity.
+  4. Call CanIf_Transmit(TxPduId, PduInfoPtr) again.
+Expected result:
+  - Step 2: CanIf_Transmit returns E_OK and the PDU is queued.
+  - Step 4: CanIf_Transmit returns E_NOT_OK and no additional buffer entry
+    is created.
+
+TC-CHG-009
+Change type: Functional
+Cross dependency: None
+Related Req IDs: SWS_CANIF_00894, SWS_CANIF_00893
+Changed requirement:
+  When truncation is enabled and SduLength exceeds the global PDU length,
+  CanIf shall both truncate and report CANIF_E_DATA_LENGTH_MISMATCH.
+Preconditions:
+  - CanIfTxPduTruncation = TRUE.
+  - Global PDU length for TxPduId Y is 8.
+Steps:
+  1. Call CanIf_Transmit(Y, PduInfoPtr) with SduLength = 12.
+  2. Capture DET runtime errors.
+Expected result:
+  - Can_Write() is called with length = 8.
+  - CANIF_E_DATA_LENGTH_MISMATCH is reported once.

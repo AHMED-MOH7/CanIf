@@ -1,0 +1,69 @@
+# =============================================================================
+# TM Pipeline Configuration — CanIf (AUTOSAR AR 4.0.3)
+# =============================================================================
+#
+# Inputs come from your SDLC pipeline — pass them via CLI:
+#
+#   python -m tm_pipeline --config tm_config.yaml --mode full \
+#       --reqs-file outputs/requirement_analysis/parsed_reqs.json \
+#       --fns-file  outputs/static_analysis/parsed_functions.json
+#
+# ── Required JSON formats ─────────────────────────────────────────────────────
+#
+#   parsed_reqs.json   (from Requirement Analysis phase)
+#   [
+#     { "id": "SWS_CANIF_00308", "description": "The service shall..." },
+#     ...
+#   ]
+#
+#   parsed_functions.json   (from Static Analysis phase)
+#   [
+#     {
+#       "name":        "CanIf_SetControllerMode",
+#       "file":        "CanIf.c",
+#       "line_start":  226,
+#       "line_end":    318,
+#       "signature":   "Std_ReturnType CanIf_SetControllerMode(...)",
+#       "body_text":   "...",
+#       "comments":    "...",
+#       "inline_refs": ["SWS_CANIF_00308"]
+#     },
+#     ...
+#   ]
+#   "hash" is optional in both — computed automatically if absent.
+# =============================================================================
+
+# ── LLM provider ─────────────────────────────────────────────────────────────
+llm:
+  provider: anthropic          # "anthropic" | "openai" | "azure_openai"
+  model: claude-opus-4-7       # Anthropic: claude-opus-4-7 | claude-sonnet-4-6
+  # model: gpt-4o              # OpenAI alternative
+  api_key_env: ANTHROPIC_API_KEY
+  # api_key_env: OPENAI_API_KEY
+
+  max_tokens: 1024
+  max_retries: 3
+
+  # TF-IDF shortlist size — candidates sent to LLM per requirement.
+  # Higher → more context for the LLM but longer prompts.
+  shortlist_k: 8
+
+# ── Confidence thresholds ─────────────────────────────────────────────────────
+confidence:
+  # Mappings with these confidence levels are written to the TM.
+  # LOW items always go to the review queue.
+  accept_mappings:
+    - HIGH
+    - MEDIUM
+
+# ── Output files ─────────────────────────────────────────────────────────────
+output:
+  tm_file:           Traceability-Matrix/AUTO-REQ-CODE-TM.md
+  unmapped_file:     Traceability-Matrix/AUTO-Unmapped-REQ.md
+  report_file:       Traceability-Matrix/tm_report.json
+  review_queue_file: Traceability-Matrix/tm_review_queue.md
+  state_file:        Traceability-Matrix/tm_state.json
+
+# ── File watcher (watch mode only) ───────────────────────────────────────────
+watcher:
+  debounce_seconds: 5
